@@ -70,14 +70,18 @@ class SteganographyApp:
         if self.image_path:
             self.show_image()
 
+        print('-----------------')
+
     def show_image(self):
         img = Image.open(self.image_path)
-        img = img.resize((500, 500), Image.ANTIALIAS if 'ANTIALIAS' in dir(Image) else Image.BICUBIC)
+        img = img.resize((900, 500), Image.ANTIALIAS if 'ANTIALIAS' in dir(Image) else Image.BICUBIC)
         img = ImageTk.PhotoImage(img)
 
         panel = tk.Label(self.root, image=img)
         panel.image = img
         panel.pack()
+
+        print('-----------------')
 
     def encode_text(self):
         if self.image_path:
@@ -87,12 +91,29 @@ class SteganographyApp:
         else:
             print("Please upload an image first.")
 
-    def decode_text(self):
-        if self.image_path:
-            decoded_text = decode_text(self.image_path)
-            print(f"Decoded Text: {decoded_text}")
-        else:
-            print("Please upload an image first.")
+        print('-----------------')
+
+    def decode_text(image_path):
+        try:
+            encoded_image = Image.open(image_path)
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+        binary_text = ''
+
+        # Iterate over each pixel
+        for i in range(encoded_image.width):
+            for j in range(encoded_image.height):
+                pixel = list(encoded_image.getpixel((i, j)))
+
+                # Extract the least significant bit from each color channel
+                for color_channel in range(3):
+                    binary_text += str(pixel[color_channel] & 1)
+
+        # Convert binary text to ASCII
+        decoded_text = ''.join(chr(int(binary_text[i:i + 8], 2)) for i in range(0, len(binary_text), 8)).rstrip('\x00')
+        print('-----------------')
+        return decoded_text
 
 
 if __name__ == "__main__":
